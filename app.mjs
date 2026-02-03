@@ -10,7 +10,6 @@ const PORT = process.env.PORT || 4000;
 app.use(cors({ origin: domainName }));
 app.use(express.json());
 
-
 app.get("/health", (req, res) => {
   res.status(200).json({ message: "OK" });
 });
@@ -27,9 +26,7 @@ app.get("/health/db", async (req, res) => {
 
 app.get("/posts", async (req, res) => {
   try {
-    const results = await connectionPool.query(
-      "select * from posts"
-    );
+    const results = await connectionPool.query("select * from posts");
 
     return res.status(200).json({
       data: results.rows,
@@ -40,6 +37,41 @@ app.get("/posts", async (req, res) => {
       message: "server cannot read post",
     });
   }
+});
+
+app.post("/posts", async (req, res) => {
+  const { title, image, category_id, description, content, status_id } =
+    req.body;
+
+  try {
+    const query = `insert into posts (title, image, category_id, description, content, status_id)
+    values ($1, $2, $3, $4, $5, $6)`;
+
+    const values = [title, image, category_id, description, content, status_id];
+
+    if (
+      !title ||
+      !image ||
+      !category_id ||
+      !description ||
+      !content ||
+      !status_id
+    ) {
+      return res.status(400).json({
+        message:
+          "Server could not create post because there are missing data from client",
+      });
+    }
+
+    await connectionPool.query(query, values);
+  } catch (error) {
+    console.error("Create post error:", error);
+    return res.status(500).json({
+      message: `Server could not create post because database connection`,
+    });
+  }
+
+  return res.status(201).json({ message: "Created post successfully" });
 });
 
 app.listen(PORT, () => {
