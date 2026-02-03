@@ -15,9 +15,6 @@ app.get("/health", (req, res) => {
   res.status(200).json({ message: "OK" });
 });
 
-// routes อื่นๆ
-// app.post("/posts", ...)
-
 app.get("/health/db", async (req, res) => {
   try {
     await connectionPool.query("select 1");
@@ -27,7 +24,6 @@ app.get("/health/db", async (req, res) => {
     res.status(500).json({ db: "down" });
   }
 });
-
 
 app.get("/posts", async (req, res) => {
   try {
@@ -45,7 +41,6 @@ app.get("/posts", async (req, res) => {
     });
   }
 });
-
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
