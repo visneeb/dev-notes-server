@@ -27,32 +27,25 @@ app.get("/health/db", async (req, res) => {
 app.get("/posts", async (req, res) => {
   let results;
   try {
-    const { category_id, keywords, page = 1 } = req.query;
-    const PAGE_SIZE = 6;
-    const offset = (page - 1) * PAGE_SIZE;
+    const { category_id, keyword } = req.query;
 
     let query = "SELECT * FROM posts";
     const conditions = [];
     const values = [];
 
     if (category_id) {
-      values.push(`%${category_id}%`);
+      values.push(Number(category_id));
       conditions.push(`category_id = $${values.length}`);
     }
 
-    if (keywords) {
-      values.push(`%${keywords}%`);
+    if (keyword) {
+      values.push(`%${keyword}%`);
       conditions.push(`title ILIKE $${values.length}`);
     }
 
     if (conditions.length > 0) {
       query += " WHERE " + conditions.join(" AND ");
     }
-    values.push(PAGE_SIZE);
-    query += ` LIMIT $${values.length}`;
-
-    values.push(offset);
-    query += ` OFFSET $${values.length}`;
 
     results = await connectionPool.query(query, values);
   } catch (err) {
@@ -64,8 +57,6 @@ app.get("/posts", async (req, res) => {
 
   return res.status(200).json({
     data: results.rows,
-    page: Number(page),
-    pageSize: PAGE_SIZE,
   });
 });
 
