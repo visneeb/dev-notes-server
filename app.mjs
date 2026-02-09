@@ -31,7 +31,7 @@ app.get("/posts", async (req, res) => {
     const keywords = req.query.keywords;
     const PAGE_SIZE = 5;
 
-    let query = "select * from movies";
+    let query = "select * from posts";
     let values = [];
 
     if (keywords && genres) {
