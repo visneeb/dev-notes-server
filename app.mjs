@@ -25,6 +25,7 @@ app.get("/health/db", async (req, res) => {
 });
 
 app.get("/posts", async (req, res) => {
+  let results;
   try {
     const genres = req.query.genres;
     const keywords = req.query.keywords;
@@ -46,7 +47,7 @@ app.get("/posts", async (req, res) => {
       query += " limit $1";
       values = [PAGE_SIZE];
     }
-    const results = await connectionPool.query(query, values);
+    results = await connectionPool.query(query, values);
   } catch (err) {
     console.error("DB error:", err);
     return res.status(500).json({
