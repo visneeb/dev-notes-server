@@ -27,26 +27,33 @@ app.get("/health/db", async (req, res) => {
 app.get("/posts", async (req, res) => {
   let results;
   try {
-    const genres = req.query.genres;
-    const keywords = req.query.keywords;
-    const PAGE_SIZE = 5;
+    const { category_id, keywords, page = 1 } = req.query;
+    const PAGE_SIZE = 6;
+    const offset = (page - 1) * PAGE_SIZE;
 
-    let query = "select * from posts";
-    let values = [];
+    let query = "SELECT * FROM posts";
+    const conditions = [];
+    const values = [];
 
-    if (keywords && genres) {
-      query += " where genres ilike $1 and title ilike $2 limit $3";
-      values = [`%${genres}%`, `%${keywords}%`, PAGE_SIZE];
-    } else if (keywords) {
-      query += " where title ilike $1 limit $2";
-      values = [`%${keywords}%`, PAGE_SIZE];
-    } else if (genres) {
-      query += " where genres ilike $1 limit $2";
-      values = [`%${genres}%`, PAGE_SIZE];
-    } else {
-      query += " limit $1";
-      values = [PAGE_SIZE];
+    if (category_id) {
+      values.push(`%${category_id}%`);
+      conditions.push(`category_id = $${values.length}`);
     }
+
+    if (keywords) {
+      values.push(`%${keywords}%`);
+      conditions.push(`title ILIKE $${values.length}`);
+    }
+
+    if (conditions.length > 0) {
+      query += " WHERE " + conditions.join(" AND ");
+    }
+    values.push(PAGE_SIZE);
+    query += ` LIMIT $${values.length}`;
+
+    values.push(offset);
+    query += ` OFFSET $${values.length}`;
+
     results = await connectionPool.query(query, values);
   } catch (err) {
     console.error("DB error:", err);
@@ -57,6 +64,8 @@ app.get("/posts", async (req, res) => {
 
   return res.status(200).json({
     data: results.rows,
+    page: Number(page),
+    pageSize: PAGE_SIZE,
   });
 });
 
