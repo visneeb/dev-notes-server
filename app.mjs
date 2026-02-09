@@ -137,12 +137,13 @@ app.put("/posts/:postId", async (req, res) => {
       postId,
     ];
 
+    result = await connectionPool.query(query, values);
+
     if (result.rows.length === 0) {
       return res
         .status(404)
         .json({ message: "Server could not find a requested post to update" });
     }
-    result = await connectionPool.query(query, values);
   } catch (error) {
     console.error("Create post error:", error);
     return res.status(500).json({
@@ -150,7 +151,9 @@ app.put("/posts/:postId", async (req, res) => {
     });
   }
 
-  return res.status(200).json({ message: "Updated post sucessfully" });
+  return res
+    .status(200)
+    .json({ message: "Updated post sucessfully", data: result.rows[0] });
 });
 
 app.delete("/posts/:postId", async (req, res) => {
@@ -174,6 +177,10 @@ app.delete("/posts/:postId", async (req, res) => {
       message: `Server could not delete post because database connection`,
     });
   }
+
+  return res.status(200).json({
+    message: "Deleted post sucessfully",
+  });
 });
 
 app.listen(PORT, () => {
