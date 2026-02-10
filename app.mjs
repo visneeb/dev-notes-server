@@ -29,7 +29,14 @@ app.get("/posts", async (req, res) => {
   try {
     const { category_id, keyword } = req.query;
 
-    let query = "SELECT * FROM posts";
+    let query = `
+      SELECT
+        posts.*,
+        categories.name AS category_name
+      FROM posts
+      JOIN categories
+        ON posts.category_id = categories.id
+    `;
     const conditions = [];
     const values = [];
 
@@ -65,9 +72,13 @@ app.get("/posts/:postId", async (req, res) => {
   let results;
 
   try {
-    results = await connectionPool.query("select * from posts where id = $1", [
-      postId,
-    ]);
+    results = await connectionPool.query(
+      `SELECT posts.*, categories.name AS category_name
+       FROM posts
+       JOIN categories ON posts.category_id = categories.id
+       WHERE posts.id = $1`,
+      [postId],
+    );
 
     if (results.rows.length === 0) {
       return res.status(404).json({
@@ -182,6 +193,21 @@ app.delete("/posts/:postId", async (req, res) => {
   return res.status(200).json({
     message: "Deleted post sucessfully",
   });
+});
+
+app.get("/categories", async (req, res) => {
+  try {
+    const result = await connectionPool.query(
+      "SELECT id, name FROM categories ORDER BY id",
+    );
+
+    res.status(200).json({
+      data: result.rows,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "cannot fetch categories" });
+  }
 });
 
 app.listen(PORT, () => {
