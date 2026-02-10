@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import { domainName } from "./configs/config.mjs";
 import connectionPool from "./utils/db.mjs";
+import { validatePostData } from "./middlewares/post.validation.mjs";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -96,7 +97,7 @@ app.get("/posts/:postId", async (req, res) => {
   });
 });
 
-app.post("/posts", async (req, res) => {
+app.post("/posts", validatePostData, async (req, res) => {
   const { title, image, category_id, description, content, status_id } =
     req.body;
 
@@ -131,7 +132,7 @@ app.post("/posts", async (req, res) => {
   return res.status(201).json({ message: "Created post successfully" });
 });
 
-app.put("/posts/:postId", async (req, res) => {
+app.put("/posts/:postId", validatePostData, async (req, res) => {
   const { postId } = req.params;
   const { title, image, category_id, description, content, status_id } =
     req.body;
