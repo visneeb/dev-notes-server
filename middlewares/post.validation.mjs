@@ -1,54 +1,38 @@
 export const validatePostData = (req, res, next) => {
-  const { title, image, category_id, description, content, status_id } =
-    req.body;
+  const fields = [
+    { key: "title", type: "string" },
+    { key: "image", type: "string" },
+    { key: "description", type: "string" },
+    { key: "content", type: "string" },
+    { key: "category_id", type: "number" },
+    { key: "status_id", type: "number" },
+  ];
 
-  if (!title) {
-    return res.status(400).json({ message: "Title is required" });
+  for (const field of fields) {
+    const value = req.body[field.key];
+
+    if (value == null) {
+      return res.status(400).json({
+        message: `${field.key} is required`,
+      });
+    }
+
+    if (field.type === "number" && isNaN(Number(value))) {
+      return res.status(400).json({
+        message: `${field.key} must be a number`,
+      });
+    }
+
+    if (field.type === "string" && typeof value !== "string") {
+      return res.status(400).json({
+        message: `${field.key} must be a string`,
+      });
+    }
   }
 
-  if (typeof title !== "string") {
-    return res.status(400).json({ message: "Title must be a string" });
-  }
-
-  if (!image) {
-    return res.status(400).json({ message: "Image is required" });
-  }
-
-  if (typeof image !== "string") {
-    return res.status(400).json({ message: "image must be a string" });
-  }
-
-  if (!category_id) {
-    return res.status(400).json({ message: "Category ID is required" });
-  }
-
-  if (typeof category_id !== "number") {
-    return res.status(400).json({ message: "Category ID must be a number" });
-  }
-
-  if (!description) {
-    return res.status(400).json({ message: "Description is required" });
-  }
-
-  if (typeof description !== "string") {
-    return res.status(400).json({ message: "Description must be a string" });
-  }
-
-  if (!content) {
-    return res.status(400).json({ message: "Content is required" });
-  }
-
-  if (typeof content !== "string") {
-    return res.status(400).json({ message: "Content must be a string" });
-  }
-
-  if (!status_id) {
-    return res.status(400).json({ message: "Status ID is required" });
-  }
-
-  if (typeof status_id !== "number") {
-    return res.status(400).json({ message: "Status ID must be a number" });
-  }
+  // normalize data 
+  req.body.category_id = Number(req.body.category_id);
+  req.body.status_id = Number(req.body.status_id);
 
   next();
 };
