@@ -33,7 +33,13 @@ const PostRepository = {
   },
 
   findById: async (postId) => {
-    const query = `select * from posts where id = $1`;
+    const query = `SELECT posts.*,
+                  categories.name AS category_name
+                  FROM posts
+                  JOIN categories
+                    ON posts.category_id = categories.id 
+                  where posts.id = $1`;
+
     const values = [postId];
 
     const { rows } = await connectionPool.query(query, values);
