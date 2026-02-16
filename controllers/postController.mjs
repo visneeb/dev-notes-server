@@ -27,7 +27,10 @@ const PostController = {
 
   createPost: async (req, res, next) => {
     try {
-      await PostService.createPost(req.body);
+      const newPost = req.body;
+      const file = req.files?.imageFile?.[0] || null;
+
+      await PostService.createPost(newPost, file);
 
       res.status(201).json({
         message: "Created post successfully",

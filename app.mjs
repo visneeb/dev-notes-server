@@ -6,6 +6,7 @@ import connectionPool from "./utils/db.mjs";
 
 import PostRouter from "./routes/post.route.mjs";
 import CategoryRouter from "./routes/category.route.mjs";
+import authRouter from "./routes/auth.route.mjs";
 
 import globalErrorHandler from "./middlewares/globalErrorHandler.mjs";
 
@@ -32,6 +33,8 @@ app.get("/health/db", async (req, res) => {
 app.use("/posts", PostRouter.createRouter());
 
 app.use("/categories", CategoryRouter.createRouter());
+
+app.use("/auth", authRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
