@@ -1,7 +1,6 @@
 export const validatePostData = (req, res, next) => {
   const fields = [
     { key: "title", type: "string" },
-    { key: "image", type: "string" },
     { key: "description", type: "string" },
     { key: "content", type: "string" },
     { key: "category_id", type: "number" },

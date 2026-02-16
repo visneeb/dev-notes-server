@@ -1,6 +1,13 @@
 import PostRepository from "../repositories/postRepository.mjs";
 import BadRequestError from "../src/errors/BadRequestError.mjs";
 import NotFoundError from "../src/errors/NotFoundError.mjs";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
+
 
 const PostService = {
   getAllPosts: async ({ categoryId, keyword }) => {
@@ -28,8 +35,36 @@ const PostService = {
     return post;
   },
 
-  createPost: async (postData) => {
-    return await PostRepository.create(postData);
+  createPost: async (postData, file) => {
+    const bucketName = "dev-notes";
+    let imageUrl = null;
+
+    if (file) {
+      const filePath = `posts/${Date.now()}_${file.originalname}`;
+
+      const { data, error } = await supabase.storage
+        .from(bucketName)
+        .upload(filePath, file.buffer, {
+          contentType: file.mimetype,
+          upsert: false,
+        });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from(bucketName).getPublicUrl(data.path);
+
+      imageUrl = publicUrl;
+    }
+
+    const newPostData = {
+      ...postData,
+      image: imageUrl,
+    };
+
+    return await PostRepository.create(newPostData);
   },
 
   updatePost: async (postId, postData) => {

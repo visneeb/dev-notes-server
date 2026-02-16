@@ -52,7 +52,7 @@ const PostRepository = {
       postData;
     const query = `insert into posts (title, image, category_id, description, content, status_id)
     values ($1, $2, $3, $4, $5, $6) RETURNING *`;
-    const values = [title, image, category_id, description, content, status_id];
+    const values = [title, image, parseInt(category_id), description, content, parseInt(status_id)];
 
     const result = await connectionPool.query(query, values);
 
